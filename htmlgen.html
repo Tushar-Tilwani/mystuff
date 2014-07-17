@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular-sanitize.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <style type="text/css">
+        /************************** RESET CSS *************************************/
+        html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video
+        {
+            margin: 0;
+            padding: 0;
+            border: 0;
+        }
+        /* HTML5 display-role reset for older browsers */
+        article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section
+        {
+            display: block;
+        }
+        body
+        {
+            line-height: 1;
+        }
+        ol, ul
+        {
+            list-style: none;
+        }
+        blockquote, q
+        {
+            quotes: none;
+        }
+        blockquote:before, blockquote:after, q:before, q:after
+        {
+            content: '';
+            content: none;
+        }
+        table
+        {
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+        /************************** RESET CSS END *************************************/
+        html, body
+        {
+            height: 100%;
+            width: 100%;
+        }
+        .body
+        {
+            height: 100%;
+            width: 100%;
+        }
+        table.editor
+        {
+            height: 80%;
+            width: 100%;
+        }
+        table.editor tr td
+        {
+            height: 25%;
+            width: 25%;
+            border: 2px solid black;
+            text-align: center;
+            padding: 10px;
+        }
+        textarea
+        {
+            height: 80%;
+            width: 80%;
+            top: 0;
+            left: 0;
+        }
+        lable
+        {
+        }
+        #preview
+        {
+            height: 100%;
+            width: 100%;
+        }
+    </style>
+</head>
+<body ng-app="myapp">
+    <div class='body' ng-controller="pfizerTool">
+        <button id='RUN' ng-click="insert(htmlCode,cssCode,jsCode)">
+            RUN</button>
+        <button id='template1' ng-click="changeSrc('1')">
+            TEMPLATE1</button>
+        <button id='template2' ng-click="changeSrc('2')">
+            TEMPLATE2</button>
+        <table class='editor'>
+            <tr>
+                <td>
+                    <label>
+                        HTML</label><br />
+                    <textarea ng-model="htmlCode">{{ htmlPreview.htmlCode1 }}</textarea>
+                </td>
+                <td>
+                    <label>
+                        CSS</label><br />
+                    <textarea ng-model="cssCode"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <label>
+                        JavaScript</label><br />
+                    <textarea ng-model="jsCode"></textarea>
+                </td>
+                <td>
+                    <iframe id='preview' ng-src="{{templateUrl}}">
+                        <p>
+                            Your browser does not support iframes.</p>
+                    </iframe>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+<script type="text/javascript">
+    angular.module("myapp", ['ngSanitize'])
+    .controller("pfizerTool", ['$scope', '$sce', function ($scope, $sce) {
+        $scope.htmlPreview = {};
+        var s = null;
+        document.getElementById('preview').onload = function () {
+            s = document.getElementById('preview').contentDocument;
+            $scope.htmlPreview.htmlCode1 = $sce.trustAsHtml(s.body.innerHTML);
+            $scope.$apply();
+        }
+        $scope.insert = function (htmlCode, cssCode, jsCode) {
+            if (typeof htmlCode === 'undefined')
+                return false;
+
+            var b = s.body;
+            var h = s.head;
+
+            while (b.firstChild) {
+                b.removeChild(b.firstChild);
+            }
+            while (h.firstChild) {
+                h.removeChild(h.firstChild);
+            }
+
+            h.innerHTML = '<link href="styles/common.css" rel="stylesheet" type="text/css" />';
+
+            if (typeof cssCode !== 'undefined') {
+                var style = document.createElement("style");
+                style.setAttribute('type', 'text/css');
+                style.setAttribute('rel', 'stylesheet');
+                style.appendChild(document.createTextNode(cssCode));
+                h.appendChild(style);
+            }
+
+            b.innerHTML = htmlCode;
+
+            if (typeof jsCode !== 'undefined') {
+                var script = document.createElement("script");
+                script.appendChild(document.createTextNode(jsCode));
+                b.appendChild(script);
+            }
+
+        }
+
+        $scope.changeSrc = function (id) {
+            $scope.templateUrl = $sce.trustAsResourceUrl('templates/template' + id + '/index.html');
+            $scope.$apply();
+        }
+
+    } ]);  
+</script>
+</html>
